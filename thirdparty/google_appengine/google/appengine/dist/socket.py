@@ -41,3 +41,5 @@ def _fileobject(fp, mode='rb', bufsize=-1, close=False):
   if not hasattr(fp, 'fileno'):
     fp.fileno = lambda: None
   return fp
+
+ssl = None
