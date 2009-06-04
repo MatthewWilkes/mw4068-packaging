@@ -1,0 +1,16 @@
+# use glob syntax.
+syntax: glob
+
+*.pyc
+*.zip
+*~
+.project
+.pydevproject
+app.yaml
+build
+tests/coverageResults
+*,cover
+tests/.coverage
+*.git
+.gitignore
+.DS_Store
