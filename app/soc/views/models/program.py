@@ -64,21 +64,7 @@ class View(presence.View):
   """View methods for the Program model.
   """
 
-  DEF_ACCEPTED_ORGS_MSG_FMT = ugettext("These organizations have"
-      " been accepted into %(name)s, but they have not yet completed"
-      " their organization profile. You can still learn more about"
-      " each organization by visiting the links below.")
-
-  DEF_CREATED_ORGS_MSG_FMT = ugettext("These organizations have been"
-      " accepted into %(name)s and have completed their organization"
-      " profiles. You can learn more about each organization by"
-      " visiting the links below.")
-
   DEF_SLOTS_ALLOCATION_MSG = ugettext("Use this view to assign slots.")
-
-  DEF_ACCEPTED_PROJECTS_MSG_FMT = ugettext("These projects have been"
-      " accepted into %(name)s. You can learn more about each project"
-      " by visiting the links below.")
 
   def __init__(self, params=None):
     """Defines the fields and methods required for the base View class
@@ -139,7 +125,7 @@ class View(presence.View):
           "List all accepted organizations"),
         (r'^%(url_name)s/(?P<access_type>list_projects)/%(key_fields)s$',
           '%(module_package)s.%(module_name)s.list_projects',
-          "List all student projects"),
+          "List all Student Projects"),
         ]
 
     new_params['extra_django_patterns'] = patterns
@@ -199,119 +185,42 @@ class View(presence.View):
 
     super(View, self).__init__(params=params)
 
-  def _getAcceptedOrgsList(self, description, params, filter, use_cache):
-    """Returns a list with all accepted orgs.
+  def _getOrgsWithProfilesList(self, program_entity, org_view, description,
+                               use_cache):
+    """Returns a content of a list of all organizations that got accepted to
+    the program and there is an Organization-like entity in datastore.
 
     Args:
+      program_entity: program which list the organizations for
+      use_cache: whether or not to use the memcache
+      org_view: a view for organization model
       description: the description of the list
-      params: the params to use
-      filter: the filter to use
-      use_cache: whether or not to use the cache
     """
 
-    logic = params['logic']
+    ao_params = org_view.getParams().copy()
 
+    org_logic = ao_params['logic']
+
+    filter = {
+        'scope': program_entity,
+        'status': ['new', 'active']
+        }
     order = ['name']
 
     if not use_cache:
-      fun = self._getData
+      entities = org_logic.getForFields(filter=filter, order=order)
     else:
       # only cache if all profiles are created
       fun =  soc.cache.logic.cache(self._getData)
-    entities = fun(logic.getModel(), filter, order, logic)
+      entities = fun(org_logic.getModel(), filter, order, org_logic)
 
-    result = dicts.rename(params, params['list_params'])
-    result['action'] = (redirects.getHomeRedirect, params)
+    result = dicts.rename(ao_params, ao_params['list_params'])
+    result['action'] = (redirects.getHomeRedirect, ao_params)
     result['description'] = description
     result['pagination'] = 'soc/list/no_pagination.html'
     result['data'] = entities
 
     return result
-
-  @decorators.merge_params
-  @decorators.check_access
-  def acceptedOrgs(self, request, access_type,
-                   page_name=None, params=None, filter=None, **kwargs):
-    """See base.View.list.
-    """
-
-    contents = []
-    logic = params['logic']
-
-    program_entity = logic.getFromKeyFieldsOr404(kwargs)
-
-    fmt = {'name': program_entity.name}
-    description = self.DEF_ACCEPTED_ORGS_MSG_FMT % fmt
-
-    filter = {
-        'status': 'accepted',
-        'scope': program_entity,
-        }
-
-    from soc.views.models import org_app as org_app_view
-    aa_params = org_app_view.view.getParams().copy() # accepted applications
-
-    # define the list redirect action to show the notification
-    del aa_params['list_key_order']
-    aa_params['list_action'] = (redirects.getHomeRedirect, aa_params)
-    aa_params['list_description'] = description
-
-    aa_list = lists.getListContent(request, aa_params, filter, idx=0,
-                                   need_content=True)
-
-    if aa_list:
-      contents.append(aa_list)
-
-    use_cache = not aa_list # only cache if there are no aa's left
-    if not program_entity.accepted_orgs_msg:
-      description = self.DEF_CREATED_ORGS_MSG_FMT % fmt
-    else:
-      description = ''
-
-    filter['status'] = ['new', 'active']
-
-    from soc.views.models.organization import view as org_view
-    ao_params = org_view.getParams().copy() # active orgs
-    ao_list = self._getAcceptedOrgsList(description, ao_params,
-        filter, use_cache)
-
-    contents.append(ao_list)
-
-    params = params.copy()
-    params['list_msg'] = program_entity.accepted_orgs_msg
-
-    return self._list(request, params, contents, page_name)
-
-  @decorators.merge_params
-  @decorators.check_access
-  def acceptedProjects(self, request, access_type,
-                       page_name=None, params=None, filter=None, **kwargs):
-    """See base.View.list.
-    """
-    contents = []
-    logic = params['logic']
-
-    program_entity = logic.getFromKeyFieldsOr404(kwargs)
-
-    filter = {
-        'status': 'accepted',
-        'program': program_entity}
-
-    fmt = {'name': program_entity.name}
-    description = self.DEF_ACCEPTED_PROJECTS_MSG_FMT % fmt
-
-    from soc.modules.gsoc.views.models import student_project as sp_view
-
-    ap_params = sp_view.view.getParams().copy() # accepted projects
-    ap_params['list_action'] = (redirects.getPublicRedirect, ap_params)
-    ap_params['list_description'] = description
-    ap_params['list_heading'] = 'soc/student_project/list/heading_all.html'
-    ap_params['list_row'] = 'soc/student_project/list/row_all.html'
-
-    prefetch = ['mentor', 'student', 'scope']
-
-    return self.list(request, access_type, page_name=page_name,
-                     params=ap_params, filter=filter, prefetch=prefetch)
 
   @decorators.merge_params
   @decorators.check_access
