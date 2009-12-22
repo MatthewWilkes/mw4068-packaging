@@ -439,14 +439,17 @@ class View(presence.View):
       # use the timeline from the entity
       fields['timeline'] = entity.timeline
 
-  def _getVisibleProgramEntries(self, entity, id, user, params):
-    """Get entries for a visible program.
+  def _getStandardProgramEntries(self, entity, id, user, params):
+    """Returns those entries for a program which are available to regular users,
+    not only to hosts or developers. 
     """
 
     items = []
 
     # show the documents for this program, even for not logged in users
     items += document_view.view.getMenusForScope(entity, params)
+
+    # also show time-dependent entities for a given user
     items += self._getTimeDependentEntries(entity, params, id, user)
 
     return items
@@ -494,14 +497,14 @@ class View(presence.View):
 
     items = []
 
-    items += [(redirects.getEditRedirect(student_entity,
-        {'url_name': prefix + '/student'}),
-        "Edit my Student Profile", 'any_access')]
+    if timeline_helper.isBeforeEvent(program_entity.timeline, 'program_end'):
+      items += [(redirects.getEditRedirect(student_entity,
+          {'url_name': prefix + '/student'}),
+          "Edit my Student Profile", 'any_access')]
 
-
-    items += [(redirects.getManageRedirect(student_entity,
-        {'url_name': prefix + '/student'}),
-        "Resign as a Student", 'any_access')]
+      items += [(redirects.getManageRedirect(student_entity,
+          {'url_name': prefix + '/student'}),
+          "Resign as a Student", 'any_access')]
 
     return items
 
