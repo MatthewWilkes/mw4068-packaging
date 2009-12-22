@@ -137,7 +137,7 @@ class View(program.View):
       items = []
 
       if entity.status == 'visible':
-        items += self._getVisibleProgramEntries(entity, id, user, params)
+        items += self._getStandardProgramEntries(entity, id, user, params)
         items += self._getSurveyEntries(entity, params, id, user)
       try:
         # check if the current user is a host for this program
@@ -147,7 +147,7 @@ class View(program.View):
 
         if entity.status == 'invisible':
           # still add the document links so hosts can see how it looks like
-          items += self._getVisibleProgramEntries(entity, id, user, params)
+          items += self._getStandardProgramEntries(entity, id, user, params)
           items += self._getSurveyEntries(entity, params, id, user)
 
         items += self._getHostEntries(entity, params, 'gsoc')
@@ -316,7 +316,7 @@ class View(program.View):
     timeline_entity = program_entity.timeline
 
     if timeline_helper.isActivePeriod(timeline_entity, 'student_signup'):
-      items += [('/student_proposal/list_orgs/%s' % (
+      items += [('/gsoc/student_proposal/list_orgs/%s' % (
           student_entity.key().id_or_name()),
           "Submit your Student Proposal", 'any_access')]
 
