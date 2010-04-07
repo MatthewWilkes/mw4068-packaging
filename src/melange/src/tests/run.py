@@ -67,7 +67,7 @@ def main():
   os.environ['USER_EMAIL'] = 'test@example.com'
   os.environ['CURRENT_VERSION_ID'] = 'testing-version'
   os.environ['HTTP_HOST'] = 'some.testing.host.tld'
-  import main as app_main
+  import melange.main as app_main
   from google.appengine.api import apiproxy_stub_map
   from google.appengine.api import datastore_file_stub
   from google.appengine.api import mail_stub
