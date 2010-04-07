@@ -51,7 +51,7 @@ options(
                      'profiler.py'],
         app_dirs =  ["soc", "feedparser", "python25src", "reflistprop",
                      "jquery", "ranklist", "shell", "json", "jlinq",
-                     "htmlsanitizer", "taggable", "gviz", "django"],
+                     "htmlsanitizer", "taggable", "gviz"],
         zip_files = ['tiny_mce.zip'],
         skip_pylint = False,
         skip_closure = False,
