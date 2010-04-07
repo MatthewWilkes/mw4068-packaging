@@ -27,22 +27,10 @@ __authors__ = [
   ]
 
 
-if os.environ['SERVER_SOFTWARE'].startswith('Dev'):
-  
-  # Remove the standard version of Django.
-  for k in [k for k in sys.modules if k.startswith('django')]:
-    del sys.modules[k]
-
-  # Force sys.path to have our own directory first, in case we want to import
-  # from it. This lets us replace the built-in Django
-  sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
-  sys.path.insert(0, os.path.abspath('django'))
-  sys.path.insert(0, os.path.abspath('django.zip'))
-
-else:
+if not os.environ['SERVER_SOFTWARE'].startswith('Dev'):
   # Declare the Django version we need.
   from google.appengine.dist import use_library
-  use_library('django', '1.0')
+  use_library('django', '1.1')
 
 # Force Django to reload its settings.
 from django.conf import settings
