@@ -23,11 +23,15 @@ setup(
     url='http://code.google.com/p/soc',
     license='Apache2',
     install_requires = [
+        'PyYAML',
+        'WebOb',
+        'zope.testbrowser',
+        'pylint',
+        'nose',
+        'Django==1.1.0',
+        'fixture',
         ],
     tests_require=[
-        'zope.testbrowser',
-        'gaeftest',
-        'nose',
         ],
     entry_points = {'console_scripts': ['run-tests = tests.run:main',
                                         'gen-app-yaml = scripts.gen_app_yaml:main',
